@@ -33,19 +33,20 @@ class _FirstPageState extends State<FirstPage> {
     super.initState();
     _loadSavedText();
   }
-
+  // Async function to load saved text from shared preferences into text field.
   _loadSavedText() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
       _textEditingController.text = (prefs.getString('saved_text') ?? "");
     });
   }
-
+  // Async function to save text into shared preferences for persistence.
   _saveText(String text) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setString('saved_text', text);
   }
 
+  // Build method for UI components.
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -55,7 +56,7 @@ class _FirstPageState extends State<FirstPage> {
       body: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // UI Interactive Widgets
+          // Elevated button to navigate to the second page.
           ElevatedButton(
             onPressed: () {
               Navigator.push(
@@ -65,6 +66,7 @@ class _FirstPageState extends State<FirstPage> {
             },
             child: const Text('Go to Second Page'),
           ),
+          // Text field for data entry, which gets saved for later.
           TextFormField(
             controller: _textEditingController,
             decoration: const InputDecoration(
@@ -74,12 +76,13 @@ class _FirstPageState extends State<FirstPage> {
               _saveText(text);
             },
           ),
+          // Text button with no functionality for now.
           TextButton(
             onPressed: () {},
             child: const Text('TextButton'),
           ),
 
-          // UI Layout Widgets
+          // Row containing icons.
           const Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [Icon(Icons.handshake), Icon(Icons.sailing), Icon(Icons.star)],
@@ -97,6 +100,7 @@ class _FirstPageState extends State<FirstPage> {
   }
 }
 
+// SecondPage contains a dynamic image fetched from an API.
 class SecondPage extends StatefulWidget {
   const SecondPage({super.key});
 
@@ -104,15 +108,17 @@ class SecondPage extends StatefulWidget {
   _SecondPageState createState() => _SecondPageState();
 }
 
+// _SecondPageState handles the state for SecondPage.
 class _SecondPageState extends State<SecondPage> {
   String imageUrl = "";
 
   @override
   void initState() {
     super.initState();
-    fetchDogImage();
+    fetchDogImage();  // Fetch a dog image URL as soon as the page is loaded.
   }
 
+  // Async function to fetch random dog image URL from API.
   fetchDogImage() async {
     final response = await http.get(Uri.parse('https://dog.ceo/api/breeds/image/random'));
     if (response.statusCode == 200) {
@@ -123,6 +129,7 @@ class _SecondPageState extends State<SecondPage> {
     }
   }
 
+  // Build method for UI components.
   @override
   Widget build(BuildContext context) {
     return Scaffold(

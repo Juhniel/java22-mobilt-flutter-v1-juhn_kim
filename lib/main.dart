@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   runApp(const MyApp());
@@ -15,8 +18,33 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class FirstPage extends StatelessWidget {
+class FirstPage extends StatefulWidget {
   const FirstPage({super.key});
+
+  @override
+  _FirstPageState createState() => _FirstPageState();
+}
+
+class _FirstPageState extends State<FirstPage> {
+  TextEditingController _textEditingController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSavedText();
+  }
+
+  _loadSavedText() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _textEditingController.text = (prefs.getString('saved_text') ?? "");
+    });
+  }
+
+  _saveText(String text) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setString('saved_text', text);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -38,9 +66,13 @@ class FirstPage extends StatelessWidget {
             child: const Text('Go to Second Page'),
           ),
           TextFormField(
+            controller: _textEditingController,
             decoration: const InputDecoration(
               labelText: 'Enter text',
             ),
+            onChanged: (text) {
+              _saveText(text);
+            },
           ),
           TextButton(
             onPressed: () {},
@@ -50,7 +82,7 @@ class FirstPage extends StatelessWidget {
           // UI Layout Widgets
           const Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [Icon(Icons.star), Icon(Icons.star), Icon(Icons.star)],
+            children: [Icon(Icons.handshake), Icon(Icons.sailing), Icon(Icons.star)],
           ),
           const Padding(
             padding: EdgeInsets.all(8.0),
@@ -65,8 +97,31 @@ class FirstPage extends StatelessWidget {
   }
 }
 
-class SecondPage extends StatelessWidget {
+class SecondPage extends StatefulWidget {
   const SecondPage({super.key});
+
+  @override
+  _SecondPageState createState() => _SecondPageState();
+}
+
+class _SecondPageState extends State<SecondPage> {
+  String imageUrl = "";
+
+  @override
+  void initState() {
+    super.initState();
+    fetchDogImage();
+  }
+
+  fetchDogImage() async {
+    final response = await http.get(Uri.parse('https://dog.ceo/api/breeds/image/random'));
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> data = jsonDecode(response.body);
+      setState(() {
+        imageUrl = data['message'];
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -75,9 +130,11 @@ class SecondPage extends StatelessWidget {
         title: const Text('Second Page'),
       ),
       body: Center(
-        // UI Widget using local resource or URI from the web
-        child: Image.network('https://hips.hearstapps.com/hmg-prod/images/dog-puppy-on-garden-royalty-free-image-1586966191.jpg?crop=0.752xw:1.00xh;0.175xw,0&resize=1200:*'),
+        child: imageUrl == ""
+            ? const CircularProgressIndicator()
+            : Image.network(imageUrl),
       ),
     );
   }
 }
+
